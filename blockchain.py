@@ -3,11 +3,21 @@ genesis_block = {"previous_hash": "", "index": 0, "transactions": []}
 blockchain = [genesis_block]
 open_transactions = []
 owner = "Gaylon"
+participants = {owner}
 
 
 def hash_block(block):
     """Returns a hash value for any given block"""
     return "-".join([str(block[key]) for key in block])
+
+
+# def get_balance(participant):
+#     """Returns the current amount of funds a participant has on balance.
+
+#     Arguments:
+#         :participant: The specified participant.
+#     """
+#     tx_sender = [[transaction['amount'] for transaction in block['transactions'] if participant is transaction['sender'] for block in blockchain]
 
 
 def get_last_blockchain_value():
@@ -20,15 +30,19 @@ def get_last_blockchain_value():
 
 def add_transaction(recipient, sender=owner, amount=1.0):
     """Store transaction details inside a dictionary, which
-    is stored within a list.
+    is stored within a list. Store the sender and recipient
+    to the participants set if unique.
 
     Arguments:
         :sender: The sender of the coins.
         :recipient: The recipient of the coins.
         :amount: The amount of coins sent with the transaction. Default = 1.0.
+	    :participants: A unique set of participants in the blockchain.
     """
     transaction = {"sender": sender, "recipient": recipient, "amount": amount}
     open_transactions.append(transaction)
+    participants.add(sender)
+    participants.add(recipient)
 
 
 def mine_block():
@@ -46,6 +60,7 @@ def mine_block():
     }
     # Add block to existing blockchain
     blockchain.append(block)
+    return True
 
 
 def get_transaction_recipient_value():
@@ -88,6 +103,7 @@ while waiting_for_input:
     print("1: Add a new transaction value")
     print("2: Mine a new block")
     print("3: Output the blockchain blocks")
+    print("4: Output participants")
     print("h: Manipulate the chain")
     print("q: Quit")
     user_choice = get_user_choice()
@@ -98,9 +114,12 @@ while waiting_for_input:
         add_transaction(recipient, amount=amount)
         print(open_transactions)
     elif user_choice == "2":
-        mine_block()
+        if mine_block():
+            open_transactions = []
     elif user_choice == "3":
         print_blockchain_elements()
+    elif user_choice == "4":
+        print(participants)
     elif user_choice == "h":
         # Make sure you can't hack if blockchain is empty
         if len(blockchain) >= 1:
