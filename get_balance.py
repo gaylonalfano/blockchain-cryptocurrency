@@ -30,24 +30,29 @@ participants = {"Aaron", "Archie", "Gaylon", "Adrian", "Ashley"}
 
 
 def get_balance(participant):
-    tx_recipient = []
-    for block in blockchain:
-        for transaction in block["transactions"]:
-            if participant == transaction["recipient"]:
-                tx_recipient.append(transaction["amount"])
+    tx_recipient = [
+        [
+            transaction["amount"]
+            for transaction in block["transactions"]
+            if participant == transaction["recipient"]
+        ]
+        for block in blockchain
+    ]
+    # for block in blockchain:
+    #     for transaction in block["transactions"]:
+    #         if participant == transaction["recipient"]:
+    #             tx_recipient.append(transaction["amount"])
     print(tx_recipient)
-    print(sum(tx_recipient))
+    # print(sum(tx_recipient))
 
 
-# get_balance("Adrian")
+get_balance("Adrian")
 
 # print(blockchain[0]["transactions"]
 
-lc_test = [[tx["amount"] for tx in block["transactions"]] for block in blockchain]
+lc_test = [
+    [transaction["amount"] for transaction in block["transactions"]]
+    for block in blockchain
+]
 
-# lc_test = [
-#     transaction["amount"]
-#     for transaction in [block["transaction"]]
-#     for block in blockchain
-# ]
-print(lc_test)
+# print(lc_test)

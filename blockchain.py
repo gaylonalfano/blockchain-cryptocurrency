@@ -1,4 +1,5 @@
 # ~/Code/blockchain_cryptocurrency/blockchain.py
+MINING_REWARD = 10
 genesis_block = {"previous_hash": "", "index": 0, "transactions": []}
 blockchain = [genesis_block]
 open_transactions = []
@@ -11,13 +12,47 @@ def hash_block(block):
     return "-".join([str(block[key]) for key in block])
 
 
-# def get_balance(participant):
-#     """Returns the current amount of funds a participant has on balance.
+def get_balance(participant):
+    """Returns the current amount of funds a participant has on balance.
 
-#     Arguments:
-#         :participant: The specified participant.
-#     """
-#     tx_sender = [[transaction['amount'] for transaction in block['transactions'] if participant is transaction['sender'] for block in blockchain]
+    Arguments:
+        :participant: The participant we want to calculate the current balance
+    """
+    tx_sender = [
+        [
+            transaction["amount"]
+            for transaction in block["transactions"]
+            if participant == transaction["sender"]
+        ]
+        for block in blockchain
+    ]
+    open_tx_sender = [
+        transaction["amount"]
+        for transaction in open_transactions
+        if transaction["sender"] == participant
+    ]
+    tx_sender.append(open_tx_sender)
+    amount_sent = 0
+    for tx in tx_sender:
+        amount_sent += sum(tx)
+
+    tx_recipient = [
+        [
+            transaction["amount"]
+            for transaction in block["transactions"]
+            if participant == transaction["recipient"]
+        ]
+        for block in blockchain
+    ]
+    amount_received = 0
+    for tx in tx_recipient:
+        if len(tx) > 0:
+            amount_received += sum(tx)
+
+    # starting_balance = 100
+    # current_balance = starting_balance + (amount_received - amount_sent)
+
+    return amount_received - amount_sent
 
 
 def get_last_blockchain_value():
@@ -26,6 +61,11 @@ def get_last_blockchain_value():
     if len(blockchain) < 1:
         return None
     return blockchain[-1]
+
+
+def verify_transaction(transaction):
+    """Returns True if sender has enough funds to send a transaction. False if not."""
+    return get_balance(transaction["sender"]) >= transaction["amount"]
 
 
 def add_transaction(recipient, sender=owner, amount=1.0):
@@ -40,9 +80,12 @@ def add_transaction(recipient, sender=owner, amount=1.0):
 	    :participants: A unique set of participants in the blockchain.
     """
     transaction = {"sender": sender, "recipient": recipient, "amount": amount}
-    open_transactions.append(transaction)
-    participants.add(sender)
-    participants.add(recipient)
+    if verify_transaction(transaction):
+        open_transactions.append(transaction)
+        participants.add(sender)
+        participants.add(recipient)
+        return True
+    return False
 
 
 def mine_block():
@@ -52,7 +95,12 @@ def mine_block():
     # Hash the previous block by concat dict values
     hashed_block = hash_block(last_block)
     print(hashed_block)
-
+    reward_transaction = {
+        "sender": "MINING",
+        "recipient": owner,
+        "amount": MINING_REWARD,
+    }
+    open_transactions.append(reward_transaction)
     block = {
         "previous_hash": hashed_block,
         "index": len(blockchain),
@@ -110,8 +158,11 @@ while waiting_for_input:
     if user_choice == "1":
         tx_data = get_transaction_recipient_value()
         recipient, amount = tx_data
-        # Add the transaction amount to the blockchain
-        add_transaction(recipient, amount=amount)
+        # Add the transaction amount to the blockchain if verified
+        if add_transaction(recipient, amount=amount):
+            print("Added transaction!")
+        else:
+            print("Transaction failed!")
         print(open_transactions)
     elif user_choice == "2":
         if mine_block():
@@ -140,6 +191,7 @@ while waiting_for_input:
         print("Invalid blockchain!")
         # Break the loop
         break
+    print(get_balance(owner))
 else:
     print("User left! While loop is finished.")
 
