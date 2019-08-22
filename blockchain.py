@@ -18,6 +18,8 @@ def get_balance(participant):
     Arguments:
         :participant: The participant we want to calculate the current balance
     """
+    # Fetch a list of all sent coin amounts for the given person (empty lists are returned if the person was NOT the sender)
+    # This fetches sent amounts of transactions that were already included in blocks of the blockchain
     tx_sender = [
         [
             transaction["amount"]
@@ -26,6 +28,8 @@ def get_balance(participant):
         ]
         for block in blockchain
     ]
+    # Fetch a list of all sent coin amounts for the given person (empty lists are returned if the person was NOT the sender)
+    # This fetches sent amounts of open transactions (to avoid double spending)
     open_tx_sender = [
         transaction["amount"]
         for transaction in open_transactions
@@ -35,7 +39,8 @@ def get_balance(participant):
     amount_sent = 0
     for tx in tx_sender:
         amount_sent += sum(tx)
-
+    # This fetches received coin amounts of transactions that were already included in blocks of the blockchain
+    # We ignore open transactions here because you shouldn't be able to spend coins before the transaction was confirmed + included in a block
     tx_recipient = [
         [
             transaction["amount"]
@@ -51,7 +56,7 @@ def get_balance(participant):
 
     # starting_balance = 100
     # current_balance = starting_balance + (amount_received - amount_sent)
-
+    # Return the total balance
     return amount_received - amount_sent
 
 
@@ -204,7 +209,7 @@ while waiting_for_input:
         print("Invalid blockchain!")
         # Break the loop
         break
-    print(get_balance(owner))
+    print(f"Balance of {owner}: {get_balance(owner):6.2f}")
 else:
     print("User left! While loop is finished.")
 

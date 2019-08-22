@@ -119,6 +119,12 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# PyCharm settings
+.idea
+
+# VS Code settings
+.vscode
+
 # mypy
 .mypy_cache/
 .dmypy.json
